@@ -302,3 +302,40 @@ class AssembleAppTest {
 4. **뒤로가기** — 뒤로 갔을 때 이후 단계 선택을 초기화할지(권장) vs 유지할지(현재).
 
 위 4가지는 "기존 동작 유지" 로 두면 순수 리팩토링이고, 바꾸면 기능 변경이므로 골든 테스트를 함께 갱신해야 한다.
+
+---
+
+## 6. 진행 현황 (2026-09-17)
+
+| 커밋 | Phase | 내용 |
+|---|---|---|
+| `test: 리팩토링 안전망용 골든 테스트 및 JUnit 실행 환경 추가` | 0 | `junit-jupiter` aggregate + surefire 3.5.3, 원본 출력을 캡처한 골든 시나리오 14개 (`src/test/resources/golden/`) |
+| `refactor: Assemble 클래스를 assemble 패키지로 이동` | 6 (앞당김) | 새 클래스에 패키지가 필요해서 먼저 처리 |
+| `refactor: 부품 매직 넘버와 int[] stack 을 enum 과 CarSpec 으로 대체` | 1 + 2 | `model/` — `Part`, `CarType`, `Engine`, `BrakeSystem`, `SteeringSystem`, `CarSpec` |
+| `refactor: 중복된 부품 호환성 규칙을 CompatibilityRules 로 단일화` | 3 | `rule/` — 규칙 5개를 리스트 하나로, `CompatibilityRulesTest` 8개 |
+| `refactor: 입출력을 Console 인터페이스로 분리하고 AssembleApp 을 인스턴스화` | 5 | `io/Console`, `SystemConsole`, 테스트용 `FakeConsole`; 골든 테스트가 90초 → 0.1초 |
+| `refactor: 단계 전이와 메뉴 정의를 Step enum 으로 통합` | 4 | `flow/Step`, `RunAction`; `main()` 의 `switch` 4개 → `handle()` 1개 |
+
+### 계획과 달라진 점
+
+- Phase 1 과 2 는 한 커밋으로 묶었다. enum 값을 담을 곳이 필요해서 `int[] stack` → `CarSpec` 교체를 같이 하는 편이 자연스러웠다.
+- Phase 5 (I/O 분리) 를 Phase 4 보다 먼저 했다. 골든 테스트가 `delay()` 때문에 90초 걸리는 문제를 먼저 없애기 위함.
+- Phase 6 의 패키지 이동은 맨 앞으로 당겼다.
+
+### 동작이 바뀐 곳 (의도된 버그 수정)
+
+| 항목 | 이전 | 이후 |
+|---|---|---|
+| B2 EOF | `NoSuchElementException` 으로 비정상 종료 | 루프를 조용히 빠져나감 (`AssembleAppTest.endOfInputStopsTheLoopWithoutError`) |
+| B3 인터럽트 | `InterruptedException` 삼킴 | `Thread.currentThread().interrupt()` 로 플래그 복원 |
+| B6 `System.in` 닫힘 | `sc.close()` | `Scanner` 를 닫지 않음 |
+| N6 줄바꿈 | `printf("...\n")` 은 LF, `println` 은 플랫폼 줄바꿈이 섞임 | 전부 `println` → 플랫폼 줄바꿈으로 통일 (골든 테스트는 CRLF/LF 를 정규화해 비교) |
+
+### 그대로 둔 것 (5장의 결정 대기 항목)
+
+- **B1** 에러 메시지의 "1 ~ 4" 표기 — 원문 유지 (`Step.rangeError`).
+- **B4** RUN 시 호환성 검사 → 고장 엔진 검사 순서 — 원문 유지.
+- **Test 결과** 위반 여러 개일 때 첫 번째만 출력 — 원문 유지 (`violations.get(0)`). `CompatibilityRules.violations()` 는 전부 반환하므로 바꾸려면 `AssembleApp.testProducedCar` 한 줄만 수정하면 된다.
+- **뒤로가기** 이후 단계 선택값 유지 — 원문 유지. `CarSpec` 이 불변이라 초기화로 바꾸기는 쉽다.
+- **RUN 출력의 표기 불일치** (`MANDO` 메뉴 vs `Mando` 출력) — `Parts.capitalized()` 로 원문 그대로 재현. 통일하려면 이 헬퍼를 지우고 골든 파일을 갱신하면 된다.
+- **B7** ANSI 클리어 시퀀스 — `SystemConsole.CLEAR_SCREEN` 에 그대로 둠.
