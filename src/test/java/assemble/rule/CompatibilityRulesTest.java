@@ -37,6 +37,13 @@ class CompatibilityRulesTest {
     }
 
     @Test
+    void suvWithOtherEngineIsAccepted() {
+        CarSpec spec = VALID_SEDAN.withCarType(CarType.SUV).withEngine(Engine.GM);
+
+        assertThat(CompatibilityRules.violations(spec)).isEmpty();
+    }
+
+    @Test
     void truckWithWiaEngineIsRejected() {
         CarSpec spec = VALID_SEDAN.withCarType(CarType.TRUCK).withEngine(Engine.WIA)
                 .withBrake(BrakeSystem.CONTINENTAL);

@@ -32,14 +32,29 @@ class AssembleMainTest {
 
     @Test
     void mainReadsStdinAndWritesStdout() {
+        String output = runMainWithStdin("exit\n");
+
+        assertThat(output)
+                .contains("어떤 차량 타입을 선택할까요?")
+                .contains("바이바이");
+    }
+
+    @Test
+    void mainStopsQuietlyWhenStdinIsClosed() {
+        String output = runMainWithStdin("");
+
+        assertThat(output)
+                .contains("어떤 차량 타입을 선택할까요?")
+                .doesNotContain("바이바이");
+    }
+
+    private static String runMainWithStdin(String stdin) {
         ByteArrayOutputStream captured = new ByteArrayOutputStream();
-        System.setIn(new ByteArrayInputStream("exit\n".getBytes(StandardCharsets.UTF_8)));
+        System.setIn(new ByteArrayInputStream(stdin.getBytes(StandardCharsets.UTF_8)));
         System.setOut(new PrintStream(captured, true, StandardCharsets.UTF_8));
 
         Assemble.main(new String[0]);
 
-        assertThat(captured.toString(StandardCharsets.UTF_8))
-                .contains("어떤 차량 타입을 선택할까요?")
-                .contains("바이바이");
+        return captured.toString(StandardCharsets.UTF_8);
     }
 }
