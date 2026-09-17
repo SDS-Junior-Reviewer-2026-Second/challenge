@@ -11,7 +11,6 @@ import assemble.model.MenuOption;
 import assemble.model.MenuOptions;
 import assemble.model.SteeringSystem;
 import assemble.rule.CarInspector;
-import assemble.rule.CompatibilityRules;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,12 +26,13 @@ public class AssembleApp {
     private static final int RESULT_DELAY_MS = 2000;
 
     private final Console console;
-    private final CarInspector inspector = new CarInspector(CompatibilityRules.ALL);
+    private final CarInspector inspector;
     private CarSpec spec = CarSpec.empty();
     private Step step = Step.CAR_TYPE;
 
-    public AssembleApp(Console console) {
+    public AssembleApp(Console console, CarInspector inspector) {
         this.console = console;
+        this.inspector = inspector;
     }
 
     public void run() {

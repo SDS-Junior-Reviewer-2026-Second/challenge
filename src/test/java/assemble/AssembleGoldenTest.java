@@ -1,6 +1,8 @@
 package assemble;
 
 import assemble.io.FakeConsole;
+import assemble.rule.CarInspector;
+import assemble.rule.CompatibilityRules;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -17,6 +19,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  * src/test/resources/golden/<name>.in 이 입력, <name>.out 이 기대 출력이다.
  */
 class AssembleGoldenTest {
+
+    private static final CarInspector STANDARD_INSPECTOR = new CarInspector(CompatibilityRules.ALL);
 
     @ParameterizedTest
     @ValueSource(strings = {
@@ -40,7 +44,7 @@ class AssembleGoldenTest {
         String expected = readResource("golden/" + scenario + ".out");
 
         FakeConsole console = new FakeConsole(inputs);
-        new AssembleApp(console).run();
+        new AssembleApp(console, STANDARD_INSPECTOR).run();
 
         assertThat(normalize(console.output())).isEqualTo(normalize(expected));
     }
