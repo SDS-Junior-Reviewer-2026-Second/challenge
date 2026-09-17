@@ -399,3 +399,29 @@ R1 → R5·R6 → R2 → R3 → R4. 앞 세 개는 각각 10분 안팎의 독립
 테스트 45개 통과. 골든 14개는 변경 없이 그대로 통과했으므로 위 커밋들은 모두 겉보기 동작을 바꾸지 않았다.
 
 **하지 않은 것**: P1(커밋 히스토리에서 버그 수정 분리) — 되돌리는 작업이라 별도 결정 필요. 7.3 의 N1~N5 는 계획대로 보류. 5장의 결정 대기 항목은 그대로.
+
+### 7.7 3차 — 뷰 분리와 마무리 (2026-09-17)
+
+| 커밋 | 항목 | 내용 |
+|---|---|---|
+| `refactor: 화면 문구와 템포를 ConsoleView 로 분리하고 Step 을 순수 흐름으로 정리` | V1 | 사용자에게 보이는 문구와 `delay` 가 전부 `ui/ConsoleView` 한 파일로. `AssembleApp` 187줄 → 105줄(컨트롤러만), `Step` 105줄 → 50줄(선택지·전이만). `selectPart` 오버로드 4개 → 제네릭 `select(option, spec::withX)` 하나 |
+| `refactor: CarInspector.standard() 팩토리 추가 및 미완성 CarSpec 검사 시 명시적 예외` | V2 | 세 곳에 중복되던 `new CarInspector(CompatibilityRules.ALL)` 제거. `CarSpec.isComplete()` 를 검사 전에 확인해 NPE 대신 의도가 드러나는 `IllegalStateException` |
+
+테스트 46개 통과, 골든 14개 불변.
+
+**최종 구조** (3.1 의 목표 구조에서 `ui/` 가 추가되고 `rule/` 에 검사기가 들어간 형태):
+
+```
+assemble/
+├── Assemble.java            main: new AssembleApp(new SystemConsole(), CarInspector.standard()).run()
+├── AssembleApp.java         입력 루프 + 상태 전이 (컨트롤러)
+├── flow/   Step, RunAction  단계·선택지·전이
+├── model/  CarType, Engine, BrakeSystem, SteeringSystem, CarSpec, MenuOption(s)
+├── rule/   CompatibilityRule(s), CarInspector, RunResult   규칙 정의와 판정
+├── ui/     ConsoleView      모든 문구와 delay
+└── io/     Console, SystemConsole (+ 테스트의 FakeConsole)
+```
+
+**5장 결정 대기 항목의 수정 위치 (뷰 분리 후 갱신)**: 전부 `ConsoleView` 한 파일이다 — 에러 메시지 범위 표기는 `menuOf()`, Test 다중 위반 출력은 `showTestResult()`, `MANDO`/`Mando` 표기는 `capitalized()` 삭제. 뒤로가기 시 초기화만 `AssembleApp.apply()` 의 `step.back()` 옆에서 `spec` 을 되돌리면 된다.
+
+**여기서 리팩토링을 멈추는 이유**: 남은 `switch` 는 Java 17 에서 이보다 단순해지지 않고, 나머지 냄새는 모두 겉보기 동작 변경(=리팩토링 범위 밖)을 요구한다. 이후 작업은 `feat:`/`fix:` 로 진행한다.
