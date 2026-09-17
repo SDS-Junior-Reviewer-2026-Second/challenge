@@ -339,3 +339,48 @@ class AssembleAppTest {
 - **뒤로가기** 이후 단계 선택값 유지 — 원문 유지. `CarSpec` 이 불변이라 초기화로 바꾸기는 쉽다.
 - **RUN 출력의 표기 불일치** (`MANDO` 메뉴 vs `Mando` 출력) — `Parts.capitalized()` 로 원문 그대로 재현. 통일하려면 이 헬퍼를 지우고 골든 파일을 갱신하면 된다.
 - **B7** ANSI 클리어 시퀀스 — `SystemConsole.CLEAR_SCREEN` 에 그대로 둠.
+
+---
+
+## 7. 2차 점검 — 교육 자료 기준으로 다시 본 남은 과제
+
+참고한 자료: `Refactoring 개요와 실습`, `Gilded Rose`, `Video Rental`, `Restaurant Booking`, `Test Double`, `Refactoring SOLID` (신입과정 교안).
+자료에서 뽑은 판단 기준과 현재 코드를 대조한 결과다. JaCoCo 로 측정한 브랜치 커버리지는 `AssembleApp` 29/31, `CompatibilityRules` 19/20, `SystemConsole` 1/2, 나머지 100%.
+
+### 7.1 바로 고치는 게 좋은 것
+
+| # | 항목 | 근거 (자료) | 내용 |
+|---|---|---|---|
+| R1 | **`Part` 인터페이스 이름이 거짓말을 함** | 개요 – 네이밍, SOLID – ISP(명확한 추상화) | `RunAction`(RUN/Test) 이 `Part` 를 구현한다. "부품" 이 아니라 "번호로 고르는 메뉴 항목" 이 실제 역할이므로 `MenuOption` 으로, `Parts` → `MenuOptions` 로 rename. |
+| R2 | **`run()` 이 아직 긴 함수** (40줄, 들여쓰기 3단, `continue` 3개) | 개요 – Long Method, 훈련 규칙 "들여쓰기 최소화", Gilded Rose – Extract Method | 입력 읽기·파싱·검증을 `Optional<Integer> readChoice()` 로 추출하면 루프 본문이 "메뉴 → 입력 → 처리" 세 줄로 읽힌다. |
+| R3 | **RUN/Test 판정이 출력과 섞여 있음** | Video Rental – "자신이 사용하는 데이터와 같은 객체에", SOLID – SRP | `runProducedCar()` 가 "호환성 → 고장 엔진 → 출력" 을 한 메서드에서 판단한다. 판정을 `RunResult`(예: `INCOMPATIBLE`, `ENGINE_BROKEN`, `READY`) 를 돌려주는 도메인 메서드로 빼면 `AssembleApp` 은 결과를 문구로 바꾸는 일만 남고, B4(검사 순서) 도 도메인 한 곳에 명시된다. |
+| R4 | **`CompatibilityRules` 에 static 으로 직접 의존** | SOLID – DIP/OCP ("변경이 잦은 구체 클래스에 직접 의존하지 말 것"), Test Double – Mock Injection | 규칙은 이 프로그램에서 가장 자주 바뀔 부분이다. `AssembleApp(Console, List<CompatibilityRule>)` 로 주입하면 규칙을 바꿔도 앱은 그대로이고, 테스트에서 가짜 규칙을 넣을 수 있다. `Assemble.main` 이 `CompatibilityRules.ALL` 을 넘긴다. |
+| R5 | **커버리지 구멍 2개** | Gilded Rose / Video Rental – 브랜치 커버리지 100% | (a) 규칙 2 의 `SUV && !TOYOTA` 분기 — "SUV + GM 은 통과" 테스트 추가. (b) `SystemConsole.readLine()` EOF 분기 — 빈 stdin 으로 `main` 을 도는 테스트 추가. `handle`/`perform` 의 미커버 1개씩은 exhaustive `switch` 의 암묵적 default 라 무시. |
+| R6 | **JaCoCo 를 빌드에 포함** | 각 KATA 공통 "커버리지 측정" | `pom.xml` 에 `jacoco-maven-plugin` 추가해 `mvn test` 마다 `target/site/jacoco` 가 나오게 한다. |
+
+### 7.2 프로세스 — 이번 작업에서 자료와 어긋난 부분
+
+| # | 항목 | 근거 | 내용 |
+|---|---|---|---|
+| P1 | **리팩토링 커밋에 버그 수정이 섞임** | 개요 Quiz 1 "버그 수정은 리팩토링이 아니다", Video Rental "커밋은 단일 주제" | `refactor: 입출력을 Console 인터페이스로 분리…` 커밋에 B2(EOF), B3(인터럽트), B6(`System.in` 닫힘) 수정이 함께 들어갔다. 원칙대로라면 `fix:` 커밋 세 개로 분리. 아직 `origin` 에 push 전이므로 히스토리를 나눌 수는 있지만, 되돌리는 작업이라 결정이 필요하다. |
+| P2 | **골든 파일에 원문의 줄바꿈 혼용이 그대로 남음** | Video Rental – Characterization Test | 테스트가 CRLF/LF 를 정규화하므로 동작엔 문제 없지만, 골든 파일 자체가 `.gitattributes` 없이 mixed line ending 이라 다른 OS 에서 diff 가 지저분할 수 있다. `*.out text eol=lf` 지정 고려. |
+
+### 7.3 검토했지만 지금은 하지 않는 게 낫다고 본 것 (YAGNI)
+
+| # | 항목 | 이유 |
+|---|---|---|
+| N1 | `handle()` 의 `switch` 를 `Step` 상수별 다형성으로 교체 | 개요 자료가 명시적으로 경고: "switch 는 무조건 나쁘고 다형성이 무조건 좋다 (X)". 현재 switch 는 5줄·exhaustive 라 바꿔도 가독성이 오르지 않는다. 단계가 실제로 추가될 때 다시 판단. |
+| N2 | `Step` 에서 UI 문구를 `MenuRenderer` 로 분리 | 흐름/문구가 한 enum 에 있어 Divergent Change 소지는 있으나, 이 규모에선 한 화면에 모여 있는 편이 읽기 쉽다. 문구 다국어화 같은 요구가 생기면 그때. |
+| N3 | 5개 enum 의 `code/displayName` 보일러플레이트 제거 | Java enum 은 상속이 안 되므로 남는 방법이 리플렉션/ordinal 트릭뿐. 지금이 가장 단순하다. |
+| N4 | `FakeConsole` 을 Mockito `@Mock` 으로 교체 | Test Double 자료 분류로 `FakeConsole` 은 "Fake"(가볍게 직접 구현한 동작하는 객체) 이고, 입력 시퀀스·출력 누적이라는 상태가 필요해 Fake 가 맞다. Mockito 는 `delay(2000)` 호출 횟수 같은 상호작용 검증이 필요해질 때 추가하면 된다. |
+| N5 | 골든 시나리오 목록을 디렉터리 스캔으로 자동화 | 하드코딩된 `@ValueSource` 가 어떤 시나리오가 있는지 한눈에 보여 준다. |
+
+### 7.4 여전히 결정 대기 (5장 항목 재확인)
+
+- **B1** 에러 메시지 범위 표기 → 결정되면 `Step.rangeError` 를 옵션 개수에서 유도하는 것도 가능.
+- **B4** RUN 검사 순서 → R3 를 하면 자연스럽게 한 곳에서 결정.
+- **Test 다중 위반 출력**, **뒤로가기 시 초기화**, **`MANDO`/`Mando` 표기** (→ 통일하면 `Parts.capitalized()` 삭제).
+
+### 7.5 추천 순서
+
+R1 → R5·R6 → R2 → R3 → R4. 앞 세 개는 각각 10분 안팎의 독립 커밋이고 동작 변화가 없다. R3·R4 는 구조가 바뀌므로 골든 테스트를 한 번 더 신뢰하고 진행한다. P1 은 히스토리 정리 여부를 먼저 정한다.
