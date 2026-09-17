@@ -10,6 +10,7 @@ import assemble.model.Engine;
 import assemble.model.MenuOption;
 import assemble.model.MenuOptions;
 import assemble.model.SteeringSystem;
+import assemble.rule.CarInspector;
 import assemble.rule.CompatibilityRules;
 
 import java.util.List;
@@ -26,6 +27,7 @@ public class AssembleApp {
     private static final int RESULT_DELAY_MS = 2000;
 
     private final Console console;
+    private final CarInspector inspector = new CarInspector(CompatibilityRules.ALL);
     private CarSpec spec = CarSpec.empty();
     private Step step = Step.CAR_TYPE;
 
@@ -155,16 +157,17 @@ public class AssembleApp {
     }
 
     private void runProducedCar() {
-        if (!CompatibilityRules.isCompatible(spec)) {
-            console.println("자동차가 동작되지 않습니다");
-            return;
+        switch (inspector.run(spec)) {
+            case INCOMPATIBLE -> console.println("자동차가 동작되지 않습니다");
+            case ENGINE_BROKEN -> {
+                console.println("엔진이 고장나있습니다.");
+                console.println("자동차가 움직이지 않습니다.");
+            }
+            case RUNNABLE -> printRunningCar();
         }
-        if (spec.engine().isBroken()) {
-            console.println("엔진이 고장나있습니다.");
-            console.println("자동차가 움직이지 않습니다.");
-            return;
-        }
+    }
 
+    private void printRunningCar() {
         console.println(String.format("Car Type : %s", spec.carType().displayName()));
         console.println(String.format("Engine   : %s", spec.engine().displayName()));
         console.println(String.format("Brake    : %s", MenuOptions.capitalized(spec.brake())));
@@ -173,7 +176,7 @@ public class AssembleApp {
     }
 
     private void testProducedCar() {
-        List<String> violations = CompatibilityRules.violations(spec);
+        List<String> violations = inspector.violations(spec);
         if (violations.isEmpty()) {
             console.println("자동차 부품 조합 테스트 결과 : PASS");
         } else {

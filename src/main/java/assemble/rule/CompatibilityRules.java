@@ -1,14 +1,13 @@
 package assemble.rule;
 
 import assemble.model.BrakeSystem;
-import assemble.model.CarSpec;
 import assemble.model.CarType;
 import assemble.model.Engine;
 import assemble.model.SteeringSystem;
 
 import java.util.List;
 
-/** 부품 조합 제약의 단일 정의. RUN 과 Test 가 모두 이 목록을 사용한다. */
+/** 부품 조합 제약의 단일 정의. 평가는 CarInspector 가 한다. */
 public final class CompatibilityRules {
 
     public static final List<CompatibilityRule> ALL = List.of(
@@ -30,16 +29,4 @@ public final class CompatibilityRules {
     );
 
     private CompatibilityRules() {}
-
-    /** 위반한 규칙의 실패 메시지를 정의 순서대로 반환한다. 비어 있으면 통과. */
-    public static List<String> violations(CarSpec spec) {
-        return ALL.stream()
-                .filter(rule -> rule.isViolatedBy(spec))
-                .map(CompatibilityRule::failMessage)
-                .toList();
-    }
-
-    public static boolean isCompatible(CarSpec spec) {
-        return violations(spec).isEmpty();
-    }
 }
