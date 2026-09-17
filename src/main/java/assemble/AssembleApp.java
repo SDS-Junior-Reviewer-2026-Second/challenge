@@ -18,6 +18,7 @@ import java.util.Optional;
 /** 자동차 조립 시뮬레이터의 입력 루프와 상태 전이. 모든 입출력은 Console 을 통해서만 한다. */
 public class AssembleApp {
 
+    private static final String EXIT_COMMAND = "exit";
     private static final String MENU_DIVIDER = "===============================";
     private static final int SELECT_DELAY_MS = 800;
     private static final int ERROR_DELAY_MS = 800;
@@ -35,44 +36,62 @@ public class AssembleApp {
     public void run() {
         while (true) {
             console.clear();
-            showMenu(step);
+            showMenu();
 
-            console.print("INPUT > ");
-            Optional<String> line = console.readLine();
-            if (line.isEmpty()) {
-                break;
+            Optional<String> input = prompt();
+            if (input.isEmpty()) {
+                return;
             }
-            String input = line.get().trim();
-
-            if (input.equalsIgnoreCase("exit")) {
+            if (input.get().equalsIgnoreCase(EXIT_COMMAND)) {
                 console.println("바이바이");
-                break;
+                return;
             }
-
-            int choice;
-            try {
-                choice = Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                console.println("ERROR :: 숫자만 입력 가능");
-                console.delay(ERROR_DELAY_MS);
-                continue;
-            }
-
-            if (!isValidChoice(step, choice)) {
-                console.delay(ERROR_DELAY_MS);
-                continue;
-            }
-
-            if (choice == 0) {
-                step = step.back();
-                continue;
-            }
-
-            handle(step, choice);
+            parseChoice(input.get()).ifPresent(this::apply);
         }
     }
 
-    private void showMenu(Step step) {
+    /** 입력 프롬프트를 띄우고 한 줄을 읽는다. 입력이 끝났으면 empty. */
+    private Optional<String> prompt() {
+        console.print("INPUT > ");
+        return console.readLine().map(String::trim);
+    }
+
+    /** 현재 단계에서 고를 수 있는 번호면 그 값을, 아니면 에러를 출력하고 empty 를 돌려준다. */
+    private Optional<Integer> parseChoice(String input) {
+        Optional<Integer> number = parseNumber(input);
+        Optional<String> error = number.isEmpty()
+                ? Optional.of("ERROR :: 숫자만 입력 가능")
+                : validationError(step, number.get());
+        if (error.isPresent()) {
+            console.println(error.get());
+            console.delay(ERROR_DELAY_MS);
+            return Optional.empty();
+        }
+        return number;
+    }
+
+    private static Optional<Integer> parseNumber(String input) {
+        try {
+            return Optional.of(Integer.parseInt(input));
+        } catch (NumberFormatException e) {
+            return Optional.empty();
+        }
+    }
+
+    private static Optional<String> validationError(Step step, int choice) {
+        boolean valid = choice == 0 ? step.allowsBack() : step.hasOption(choice);
+        return valid ? Optional.empty() : Optional.of(step.rangeError());
+    }
+
+    private void apply(int choice) {
+        if (choice == 0) {
+            step = step.back();
+            return;
+        }
+        handle(choice);
+    }
+
+    private void showMenu() {
         step.headerLines().forEach(console::println);
         console.println(step.question());
         if (step.allowsBack()) {
@@ -84,15 +103,7 @@ public class AssembleApp {
         console.println(MENU_DIVIDER);
     }
 
-    private boolean isValidChoice(Step step, int choice) {
-        boolean valid = choice == 0 ? step.allowsBack() : step.hasOption(choice);
-        if (!valid) {
-            console.println(step.rangeError());
-        }
-        return valid;
-    }
-
-    private void handle(Step step, int choice) {
+    private void handle(int choice) {
         switch (step) {
             case CAR_TYPE -> selectPart(CarType.fromCode(choice).orElseThrow());
             case ENGINE -> selectPart(Engine.fromCode(choice).orElseThrow());
