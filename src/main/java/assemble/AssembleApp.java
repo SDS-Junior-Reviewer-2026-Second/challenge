@@ -1,5 +1,7 @@
 package assemble;
 
+import assemble.flow.RunAction;
+import assemble.flow.Step;
 import assemble.io.Console;
 import assemble.model.BrakeSystem;
 import assemble.model.CarSpec;
@@ -16,208 +18,129 @@ import java.util.Optional;
 /** 자동차 조립 시뮬레이터의 입력 루프와 상태 전이. 모든 입출력은 Console 을 통해서만 한다. */
 public class AssembleApp {
 
-    private static final int CarType_Q      = 0;
-    private static final int Engine_Q       = 1;
-    private static final int BrakeSystem_Q  = 2;
-    private static final int SteeringSystem_Q = 3;
-    private static final int Run_Test       = 4;
+    private static final String MENU_DIVIDER = "===============================";
+    private static final int SELECT_DELAY_MS = 800;
+    private static final int ERROR_DELAY_MS = 800;
+    private static final int TESTING_DELAY_MS = 1500;
+    private static final int RESULT_DELAY_MS = 2000;
 
     private final Console console;
     private CarSpec spec = CarSpec.empty();
+    private Step step = Step.CAR_TYPE;
 
     public AssembleApp(Console console) {
         this.console = console;
     }
 
     public void run() {
-        int step = CarType_Q;
-
         while (true) {
             console.clear();
-
-            switch (step) {
-                case CarType_Q:
-                    showCarTypeMenu(); break;
-                case Engine_Q:
-                    showEngineMenu(); break;
-                case BrakeSystem_Q:
-                    showBrakeMenu(); break;
-                case SteeringSystem_Q:
-                    showSteeringMenu(); break;
-                case Run_Test:
-                    showRunTestMenu(); break;
-            }
+            showMenu(step);
 
             console.print("INPUT > ");
             Optional<String> line = console.readLine();
             if (line.isEmpty()) {
                 break;
             }
-            String buf = line.get().trim();
+            String input = line.get().trim();
 
-            if (buf.equalsIgnoreCase("exit")) {
+            if (input.equalsIgnoreCase("exit")) {
                 console.println("바이바이");
                 break;
             }
 
-            int answer;
+            int choice;
             try {
-                answer = Integer.parseInt(buf);
+                choice = Integer.parseInt(input);
             } catch (NumberFormatException e) {
                 console.println("ERROR :: 숫자만 입력 가능");
-                console.delay(800);
+                console.delay(ERROR_DELAY_MS);
                 continue;
             }
 
-            if (!isValidRange(step, answer)) {
-                console.delay(800);
+            if (!isValidChoice(step, choice)) {
+                console.delay(ERROR_DELAY_MS);
                 continue;
             }
 
-            if (answer == 0) {
-                if (step == Run_Test) {
-                    step = CarType_Q;
-                } else if (step > CarType_Q) {
-                    step--;
-                }
+            if (choice == 0) {
+                step = step.back();
                 continue;
             }
 
-            switch (step) {
-                case CarType_Q:
-                    selectCarType(answer);
-                    console.delay(800);
-                    step = Engine_Q;
-                    break;
-                case Engine_Q:
-                    selectEngine(answer);
-                    console.delay(800);
-                    step = BrakeSystem_Q;
-                    break;
-                case BrakeSystem_Q:
-                    selectBrakeSystem(answer);
-                    console.delay(800);
-                    step = SteeringSystem_Q;
-                    break;
-                case SteeringSystem_Q:
-                    selectSteeringSystem(answer);
-                    console.delay(800);
-                    step = Run_Test;
-                    break;
-                case Run_Test:
-                    if (answer == 1) {
-                        runProducedCar();
-                        console.delay(2000);
-                    } else if (answer == 2) {
-                        console.println("Test...");
-                        console.delay(1500);
-                        testProducedCar();
-                        console.delay(2000);
-                    }
-                    break;
-            }
+            handle(step, choice);
         }
     }
 
-    private void showCarTypeMenu() {
-        console.println("        ______________");
-        console.println("       /|            |");
-        console.println("  ____/_|_____________|____");
-        console.println(" |                      O  |");
-        console.println(" '-(@)----------------(@)--'");
-        console.println("===============================");
-        console.println("어떤 차량 타입을 선택할까요?");
-        printMenuItems(CarType.values());
-        console.println("===============================");
-    }
-    private void showEngineMenu() {
-        console.println("어떤 엔진을 탑재할까요?");
-        console.println("0. 뒤로가기");
-        printMenuItems(Engine.values());
-        console.println("===============================");
-    }
-    private void showBrakeMenu() {
-        console.println("어떤 제동장치를 선택할까요?");
-        console.println("0. 뒤로가기");
-        printMenuItems(BrakeSystem.values());
-        console.println("===============================");
-    }
-    private void showSteeringMenu() {
-        console.println("어떤 조향장치를 선택할까요?");
-        console.println("0. 뒤로가기");
-        printMenuItems(SteeringSystem.values());
-        console.println("===============================");
-    }
-    private void showRunTestMenu() {
-        console.println("멋진 차량이 완성되었습니다.");
-        console.println("어떤 동작을 할까요?");
-        console.println("0. 처음 화면으로 돌아가기");
-        console.println("1. RUN");
-        console.println("2. Test");
-        console.println("===============================");
-    }
-
-    private void printMenuItems(Part[] parts) {
-        for (Part part : parts) {
-            console.println(part.code() + ". " + part.displayName());
+    private void showMenu(Step step) {
+        step.headerLines().forEach(console::println);
+        console.println(step.question());
+        if (step.allowsBack()) {
+            console.println("0. " + step.backLabel());
         }
+        for (Part option : step.options()) {
+            console.println(option.code() + ". " + option.displayName());
+        }
+        console.println(MENU_DIVIDER);
     }
 
-    private boolean isValidRange(int step, int ans) {
+    private boolean isValidChoice(Step step, int choice) {
+        boolean valid = choice == 0 ? step.allowsBack() : step.hasOption(choice);
+        if (!valid) {
+            console.println(step.rangeError());
+        }
+        return valid;
+    }
+
+    private void handle(Step step, int choice) {
         switch (step) {
-            case CarType_Q:
-                if (CarType.fromCode(ans).isEmpty()) {
-                    console.println("ERROR :: 차량 타입은 1 ~ 3 범위만 선택 가능");
-                    return false;
-                }
-                break;
-            case Engine_Q:
-                if (ans != 0 && Engine.fromCode(ans).isEmpty()) {
-                    console.println("ERROR :: 엔진은 1 ~ 4 범위만 선택 가능");
-                    return false;
-                }
-                break;
-            case BrakeSystem_Q:
-                if (ans != 0 && BrakeSystem.fromCode(ans).isEmpty()) {
-                    console.println("ERROR :: 제동장치는 1 ~ 3 범위만 선택 가능");
-                    return false;
-                }
-                break;
-            case SteeringSystem_Q:
-                if (ans != 0 && SteeringSystem.fromCode(ans).isEmpty()) {
-                    console.println("ERROR :: 조향장치는 1 ~ 2 범위만 선택 가능");
-                    return false;
-                }
-                break;
-            case Run_Test:
-                if (ans < 0 || ans > 2) {
-                    console.println("ERROR :: Run 또는 Test 중 하나를 선택 필요");
-                    return false;
-                }
-                break;
+            case CAR_TYPE -> selectPart(CarType.fromCode(choice).orElseThrow());
+            case ENGINE -> selectPart(Engine.fromCode(choice).orElseThrow());
+            case BRAKE -> selectPart(BrakeSystem.fromCode(choice).orElseThrow());
+            case STEERING -> selectPart(SteeringSystem.fromCode(choice).orElseThrow());
+            case RUN_TEST -> perform(RunAction.fromCode(choice).orElseThrow());
         }
-        return true;
     }
 
-    private void selectCarType(int code) {
-        CarType carType = CarType.fromCode(code).orElseThrow();
+    private void selectPart(CarType carType) {
         spec = spec.withCarType(carType);
-        console.println(String.format("차량 타입으로 %s을 선택하셨습니다.", carType.displayName()));
+        advance(String.format("차량 타입으로 %s을 선택하셨습니다.", carType.displayName()));
     }
-    private void selectEngine(int code) {
-        Engine engine = Engine.fromCode(code).orElseThrow();
+
+    private void selectPart(Engine engine) {
         spec = spec.withEngine(engine);
-        console.println(String.format("%s 엔진을 선택하셨습니다.", engine.displayName()));
+        advance(String.format("%s 엔진을 선택하셨습니다.", engine.displayName()));
     }
-    private void selectBrakeSystem(int code) {
-        BrakeSystem brake = BrakeSystem.fromCode(code).orElseThrow();
+
+    private void selectPart(BrakeSystem brake) {
         spec = spec.withBrake(brake);
-        console.println(String.format("%s 제동장치를 선택하셨습니다.", brake.displayName()));
+        advance(String.format("%s 제동장치를 선택하셨습니다.", brake.displayName()));
     }
-    private void selectSteeringSystem(int code) {
-        SteeringSystem steering = SteeringSystem.fromCode(code).orElseThrow();
+
+    private void selectPart(SteeringSystem steering) {
         spec = spec.withSteering(steering);
-        console.println(String.format("%s 조향장치를 선택하셨습니다.", steering.displayName()));
+        advance(String.format("%s 조향장치를 선택하셨습니다.", steering.displayName()));
+    }
+
+    private void advance(String selectionMessage) {
+        console.println(selectionMessage);
+        console.delay(SELECT_DELAY_MS);
+        step = step.next();
+    }
+
+    private void perform(RunAction action) {
+        switch (action) {
+            case RUN -> {
+                runProducedCar();
+                console.delay(RESULT_DELAY_MS);
+            }
+            case TEST -> {
+                console.println("Test...");
+                console.delay(TESTING_DELAY_MS);
+                testProducedCar();
+                console.delay(RESULT_DELAY_MS);
+            }
+        }
     }
 
     private void runProducedCar() {
@@ -243,12 +166,8 @@ public class AssembleApp {
         if (violations.isEmpty()) {
             console.println("자동차 부품 조합 테스트 결과 : PASS");
         } else {
-            fail(violations.get(0));
+            console.println("자동차 부품 조합 테스트 결과 : FAIL");
+            console.println(violations.get(0));
         }
-    }
-
-    private void fail(String reason) {
-        console.println("자동차 부품 조합 테스트 결과 : FAIL");
-        console.println(reason);
     }
 }
