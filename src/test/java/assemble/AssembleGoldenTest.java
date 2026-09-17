@@ -2,7 +2,6 @@ package assemble;
 
 import assemble.io.FakeConsole;
 import assemble.rule.CarInspector;
-import assemble.rule.CompatibilityRules;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -20,7 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class AssembleGoldenTest {
 
-    private static final CarInspector STANDARD_INSPECTOR = new CarInspector(CompatibilityRules.ALL);
+    private static final CarInspector STANDARD_INSPECTOR = CarInspector.standard();
 
     @ParameterizedTest
     @ValueSource(strings = {

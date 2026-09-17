@@ -2,7 +2,6 @@ package assemble;
 
 import assemble.io.FakeConsole;
 import assemble.rule.CarInspector;
-import assemble.rule.CompatibilityRules;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class AssembleAppTest {
 
-    private static final CarInspector STANDARD_INSPECTOR = new CarInspector(CompatibilityRules.ALL);
+    private static final CarInspector STANDARD_INSPECTOR = CarInspector.standard();
 
     @Test
     void fullRunPrintsSpec() {

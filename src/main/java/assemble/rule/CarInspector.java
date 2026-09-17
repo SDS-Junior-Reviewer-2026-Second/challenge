@@ -13,8 +13,14 @@ public final class CarInspector {
         this.rules = List.copyOf(rules);
     }
 
+    /** 이 프로그램의 기본 규칙(CompatibilityRules.ALL) 을 쓰는 검사기. */
+    public static CarInspector standard() {
+        return new CarInspector(CompatibilityRules.ALL);
+    }
+
     /** 위반한 규칙의 실패 메시지를 정의 순서대로 반환한다. 비어 있으면 통과. */
     public List<String> violations(CarSpec spec) {
+        requireComplete(spec);
         return rules.stream()
                 .filter(rule -> rule.isViolatedBy(spec))
                 .map(CompatibilityRule::failMessage)
@@ -34,5 +40,11 @@ public final class CarInspector {
             return RunResult.ENGINE_BROKEN;
         }
         return RunResult.RUNNABLE;
+    }
+
+    private static void requireComplete(CarSpec spec) {
+        if (!spec.isComplete()) {
+            throw new IllegalStateException("모든 부품을 선택한 뒤에 검사할 수 있다: " + spec);
+        }
     }
 }

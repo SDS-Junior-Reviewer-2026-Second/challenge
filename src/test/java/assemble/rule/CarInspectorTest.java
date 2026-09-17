@@ -10,10 +10,11 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CarInspectorTest {
 
-    private static final CarInspector INSPECTOR = new CarInspector(CompatibilityRules.ALL);
+    private static final CarInspector INSPECTOR = CarInspector.standard();
 
     private static final CarSpec VALID_SEDAN =
             new CarSpec(CarType.SEDAN, Engine.GM, BrakeSystem.MANDO, SteeringSystem.BOSCH);
@@ -112,5 +113,16 @@ class CarInspectorTest {
         CarInspector lenient = new CarInspector(List.of());
 
         assertThat(lenient.violations(VALID_SEDAN.withBrake(BrakeSystem.CONTINENTAL))).isEmpty();
+    }
+
+    @Test
+    void incompleteSpecCannotBeInspected() {
+        CarSpec missingSteering = VALID_SEDAN.withSteering(null);
+
+        assertThatThrownBy(() -> INSPECTOR.run(missingSteering))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("모든 부품");
+        assertThatThrownBy(() -> INSPECTOR.violations(CarSpec.empty()))
+                .isInstanceOf(IllegalStateException.class);
     }
 }
