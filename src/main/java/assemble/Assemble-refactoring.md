@@ -384,3 +384,18 @@ class AssembleAppTest {
 ### 7.5 추천 순서
 
 R1 → R5·R6 → R2 → R3 → R4. 앞 세 개는 각각 10분 안팎의 독립 커밋이고 동작 변화가 없다. R3·R4 는 구조가 바뀌므로 골든 테스트를 한 번 더 신뢰하고 진행한다. P1 은 히스토리 정리 여부를 먼저 정한다.
+
+### 7.6 진행 현황 (2026-09-17, 2차)
+
+| 커밋 | 항목 | 내용 |
+|---|---|---|
+| `refactor: Part 인터페이스를 실제 역할에 맞게 MenuOption 으로 이름 변경` | R1 | `Part`/`Parts` → `MenuOption`/`MenuOptions` |
+| `test: JaCoCo 리포트 추가 및 미커버 분기(SUV+GM, stdin EOF) 테스트 보강` | R5, R6 | `mvn test` 마다 `target/site/jacoco/` 생성. 남은 미커버 분기는 exhaustive `switch` 의 암묵적 default 2개뿐 |
+| `refactor: run() 의 입력 읽기·파싱·검증을 별도 메서드로 추출` | R2 | `run()` 40줄 → 14줄, `prompt()` / `parseChoice()` / `parseNumber()` / `validationError()` / `apply()`. 검증(`validationError`)은 순수 함수가 되어 출력과 분리됨 |
+| `refactor: RUN 판정 로직을 CarInspector 와 RunResult 로 분리` | R3 | `rule/CarInspector` 가 `violations()` 와 `run() → RunResult{INCOMPATIBLE, ENGINE_BROKEN, RUNNABLE}` 를 담당. B4 의 검사 순서가 `CarInspector.run` 한 곳에 명시되고 `CarInspectorTest` 로 고정됨. `CompatibilityRules` 는 규칙 정의(`ALL`)만 남음 |
+| `refactor: CarInspector 를 AssembleApp 생성자로 주입` | R4 | `AssembleApp(Console, CarInspector)`. `Assemble.main` 이 조립. 규칙 없는 inspector 를 넣으면 Sedan+Continental 도 동작하는 테스트로 주입 효과 확인 |
+| `chore: .gitattributes 로 줄바꿈 정규화 및 골든 파일 LF 고정` | P2 | 골든 `.in`/`.out` 은 `eol=lf` |
+
+테스트 45개 통과. 골든 14개는 변경 없이 그대로 통과했으므로 위 커밋들은 모두 겉보기 동작을 바꾸지 않았다.
+
+**하지 않은 것**: P1(커밋 히스토리에서 버그 수정 분리) — 되돌리는 작업이라 별도 결정 필요. 7.3 의 N1~N5 는 계획대로 보류. 5장의 결정 대기 항목은 그대로.
