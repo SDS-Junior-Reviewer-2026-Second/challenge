@@ -1,3 +1,5 @@
+package assemble;
+
 import java.util.Scanner;
 
 public class Assemble {

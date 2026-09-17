@@ -1,6 +1,6 @@
 # Assemble.java 분석 및 리팩토링 제안
 
-대상: `src/main/java/Assemble.java` (270줄, 단일 클래스, 전부 `static`)
+대상: `src/main/java/assemble/Assemble.java` (270줄, 단일 클래스, 전부 `static`)
 빌드: Maven, Java 17, JUnit 5 + AssertJ 의존성 선언됨 (테스트 코드는 아직 없음)
 
 ---
