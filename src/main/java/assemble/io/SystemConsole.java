@@ -34,7 +34,9 @@ public class SystemConsole implements Console {
     public void delay(int millis) {
         try {
             Thread.sleep(millis);
-        } catch (InterruptedException ignored) {}
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
     }
 
     public void close() {
