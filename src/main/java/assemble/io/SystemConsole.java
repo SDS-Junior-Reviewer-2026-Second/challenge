@@ -38,8 +38,4 @@ public class SystemConsole implements Console {
             Thread.currentThread().interrupt();
         }
     }
-
-    public void close() {
-        scanner.close();
-    }
 }
