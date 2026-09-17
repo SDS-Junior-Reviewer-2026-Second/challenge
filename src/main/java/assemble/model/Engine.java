@@ -2,7 +2,7 @@ package assemble.model;
 
 import java.util.Optional;
 
-public enum Engine implements Part {
+public enum Engine implements MenuOption {
     GM(1, "GM"),
     TOYOTA(2, "TOYOTA"),
     WIA(3, "WIA"),
@@ -31,6 +31,6 @@ public enum Engine implements Part {
     }
 
     public static Optional<Engine> fromCode(int code) {
-        return Parts.fromCode(values(), code);
+        return MenuOptions.fromCode(values(), code);
     }
 }

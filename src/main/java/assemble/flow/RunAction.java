@@ -1,12 +1,12 @@
 package assemble.flow;
 
-import assemble.model.Part;
-import assemble.model.Parts;
+import assemble.model.MenuOption;
+import assemble.model.MenuOptions;
 
 import java.util.Optional;
 
 /** 조립 완료 화면에서 고를 수 있는 동작. */
-public enum RunAction implements Part {
+public enum RunAction implements MenuOption {
     RUN(1, "RUN"),
     TEST(2, "Test");
 
@@ -29,6 +29,6 @@ public enum RunAction implements Part {
     }
 
     public static Optional<RunAction> fromCode(int code) {
-        return Parts.fromCode(values(), code);
+        return MenuOptions.fromCode(values(), code);
     }
 }

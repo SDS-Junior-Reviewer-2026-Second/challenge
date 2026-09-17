@@ -7,8 +7,8 @@ import assemble.model.BrakeSystem;
 import assemble.model.CarSpec;
 import assemble.model.CarType;
 import assemble.model.Engine;
-import assemble.model.Part;
-import assemble.model.Parts;
+import assemble.model.MenuOption;
+import assemble.model.MenuOptions;
 import assemble.model.SteeringSystem;
 import assemble.rule.CompatibilityRules;
 
@@ -78,7 +78,7 @@ public class AssembleApp {
         if (step.allowsBack()) {
             console.println("0. " + step.backLabel());
         }
-        for (Part option : step.options()) {
+        for (MenuOption option : step.options()) {
             console.println(option.code() + ". " + option.displayName());
         }
         console.println(MENU_DIVIDER);
@@ -156,8 +156,8 @@ public class AssembleApp {
 
         console.println(String.format("Car Type : %s", spec.carType().displayName()));
         console.println(String.format("Engine   : %s", spec.engine().displayName()));
-        console.println(String.format("Brake    : %s", Parts.capitalized(spec.brake())));
-        console.println(String.format("Steering : %s", Parts.capitalized(spec.steering())));
+        console.println(String.format("Brake    : %s", MenuOptions.capitalized(spec.brake())));
+        console.println(String.format("Steering : %s", MenuOptions.capitalized(spec.steering())));
         console.println("자동차가 동작됩니다.");
     }
 

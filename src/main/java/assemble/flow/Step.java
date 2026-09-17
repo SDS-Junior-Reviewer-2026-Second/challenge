@@ -3,8 +3,8 @@ package assemble.flow;
 import assemble.model.BrakeSystem;
 import assemble.model.CarType;
 import assemble.model.Engine;
-import assemble.model.Part;
-import assemble.model.Parts;
+import assemble.model.MenuOption;
+import assemble.model.MenuOptions;
 import assemble.model.SteeringSystem;
 
 import java.util.List;
@@ -51,10 +51,10 @@ public enum Step {
     private final List<String> headerLines;
     private final String question;
     private final String backLabel;
-    private final Part[] options;
+    private final MenuOption[] options;
     private final String rangeError;
 
-    Step(List<String> headerLines, String question, String backLabel, Part[] options, String rangeError) {
+    Step(List<String> headerLines, String question, String backLabel, MenuOption[] options, String rangeError) {
         this.headerLines = headerLines;
         this.question = question;
         this.backLabel = backLabel;
@@ -75,7 +75,7 @@ public enum Step {
         return backLabel;
     }
 
-    public Part[] options() {
+    public MenuOption[] options() {
         return options;
     }
 
@@ -88,7 +88,7 @@ public enum Step {
     }
 
     public boolean hasOption(int code) {
-        return Parts.fromCode(options, code).isPresent();
+        return MenuOptions.fromCode(options, code).isPresent();
     }
 
     public Step next() {

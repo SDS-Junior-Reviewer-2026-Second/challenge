@@ -2,7 +2,7 @@ package assemble.model;
 
 import java.util.Optional;
 
-public enum CarType implements Part {
+public enum CarType implements MenuOption {
     SEDAN(1, "Sedan"),
     SUV(2, "SUV"),
     TRUCK(3, "Truck");
@@ -26,6 +26,6 @@ public enum CarType implements Part {
     }
 
     public static Optional<CarType> fromCode(int code) {
-        return Parts.fromCode(values(), code);
+        return MenuOptions.fromCode(values(), code);
     }
 }

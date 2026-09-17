@@ -2,7 +2,7 @@ package assemble.model;
 
 import java.util.Optional;
 
-public enum SteeringSystem implements Part {
+public enum SteeringSystem implements MenuOption {
     BOSCH(1, "BOSCH"),
     MOBIS(2, "MOBIS");
 
@@ -25,6 +25,6 @@ public enum SteeringSystem implements Part {
     }
 
     public static Optional<SteeringSystem> fromCode(int code) {
-        return Parts.fromCode(values(), code);
+        return MenuOptions.fromCode(values(), code);
     }
 }

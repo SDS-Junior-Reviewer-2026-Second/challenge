@@ -2,7 +2,7 @@ package assemble.model;
 
 import java.util.Optional;
 
-public enum BrakeSystem implements Part {
+public enum BrakeSystem implements MenuOption {
     MANDO(1, "MANDO"),
     CONTINENTAL(2, "CONTINENTAL"),
     BOSCH(3, "BOSCH");
@@ -26,6 +26,6 @@ public enum BrakeSystem implements Part {
     }
 
     public static Optional<BrakeSystem> fromCode(int code) {
-        return Parts.fromCode(values(), code);
+        return MenuOptions.fromCode(values(), code);
     }
 }
