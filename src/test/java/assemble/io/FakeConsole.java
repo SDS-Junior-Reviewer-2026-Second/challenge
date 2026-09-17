@@ -3,6 +3,7 @@ package assemble.io;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
+import java.util.Optional;
 
 /** 미리 정해진 입력을 돌려주고 출력을 문자열로 모으는 테스트용 Console. delay 는 즉시 반환한다. */
 public class FakeConsole implements Console {
@@ -18,10 +19,9 @@ public class FakeConsole implements Console {
         this.inputs = new ArrayDeque<>(inputs);
     }
 
-    /** Scanner 처럼 입력이 바닥나면 NoSuchElementException 을 던진다. */
     @Override
-    public String readLine() {
-        return inputs.removeFirst();
+    public Optional<String> readLine() {
+        return Optional.ofNullable(inputs.pollFirst());
     }
 
     @Override

@@ -21,4 +21,16 @@ class AssembleAppTest {
                 .contains("자동차가 동작됩니다.")
                 .contains("바이바이");
     }
+
+    @Test
+    void endOfInputStopsTheLoopWithoutError() {
+        FakeConsole console = new FakeConsole("1", "1");
+
+        new AssembleApp(console).run();
+
+        assertThat(console.output())
+                .contains("GM 엔진을 선택하셨습니다.")
+                .contains("어떤 제동장치를 선택할까요?")
+                .doesNotContain("바이바이");
+    }
 }

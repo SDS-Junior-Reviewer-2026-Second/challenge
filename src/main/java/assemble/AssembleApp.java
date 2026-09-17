@@ -11,6 +11,7 @@ import assemble.model.SteeringSystem;
 import assemble.rule.CompatibilityRules;
 
 import java.util.List;
+import java.util.Optional;
 
 /** 자동차 조립 시뮬레이터의 입력 루프와 상태 전이. 모든 입출력은 Console 을 통해서만 한다. */
 public class AssembleApp {
@@ -48,7 +49,11 @@ public class AssembleApp {
             }
 
             console.print("INPUT > ");
-            String buf = console.readLine().trim();
+            Optional<String> line = console.readLine();
+            if (line.isEmpty()) {
+                break;
+            }
+            String buf = line.get().trim();
 
             if (buf.equalsIgnoreCase("exit")) {
                 console.println("바이바이");

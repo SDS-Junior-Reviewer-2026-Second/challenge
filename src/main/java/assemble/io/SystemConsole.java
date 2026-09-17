@@ -1,5 +1,6 @@
 package assemble.io;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 /** System.in / System.out 기반 Console 구현. */
@@ -9,8 +10,8 @@ public class SystemConsole implements Console {
     private final Scanner scanner = new Scanner(System.in);
 
     @Override
-    public String readLine() {
-        return scanner.nextLine();
+    public Optional<String> readLine() {
+        return scanner.hasNextLine() ? Optional.of(scanner.nextLine()) : Optional.empty();
     }
 
     @Override
