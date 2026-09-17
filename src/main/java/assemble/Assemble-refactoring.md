@@ -396,7 +396,7 @@ R1 → R5·R6 → R2 → R3 → R4. 앞 세 개는 각각 10분 안팎의 독립
 | `refactor: CarInspector 를 AssembleApp 생성자로 주입` | R4 | `AssembleApp(Console, CarInspector)`. `Assemble.main` 이 조립. 규칙 없는 inspector 를 넣으면 Sedan+Continental 도 동작하는 테스트로 주입 효과 확인 |
 | `chore: .gitattributes 로 줄바꿈 정규화 및 골든 파일 LF 고정` | P2 | 골든 `.in`/`.out` 은 `eol=lf` |
 
-테스트 45개 통과. 골든 14개는 변경 없이 그대로 통과했으므로 위 커밋들은 모두 겉보기 동작을 바꾸지 않았다.
+테스트 36개 통과 (골든 14, CarInspector 13, Step 4, App 3, main 2). 골든 14개는 변경 없이 그대로 통과했으므로 위 커밋들은 모두 겉보기 동작을 바꾸지 않았다.
 
 **하지 않은 것**: P1(커밋 히스토리에서 버그 수정 분리) — 되돌리는 작업이라 별도 결정 필요. 7.3 의 N1~N5 는 계획대로 보류. 5장의 결정 대기 항목은 그대로.
 
@@ -407,7 +407,7 @@ R1 → R5·R6 → R2 → R3 → R4. 앞 세 개는 각각 10분 안팎의 독립
 | `refactor: 화면 문구와 템포를 ConsoleView 로 분리하고 Step 을 순수 흐름으로 정리` | V1 | 사용자에게 보이는 문구와 `delay` 가 전부 `ui/ConsoleView` 한 파일로. `AssembleApp` 187줄 → 105줄(컨트롤러만), `Step` 105줄 → 50줄(선택지·전이만). `selectPart` 오버로드 4개 → 제네릭 `select(option, spec::withX)` 하나 |
 | `refactor: CarInspector.standard() 팩토리 추가 및 미완성 CarSpec 검사 시 명시적 예외` | V2 | 세 곳에 중복되던 `new CarInspector(CompatibilityRules.ALL)` 제거. `CarSpec.isComplete()` 를 검사 전에 확인해 NPE 대신 의도가 드러나는 `IllegalStateException` |
 
-테스트 46개 통과, 골든 14개 불변.
+테스트 37개 통과 (골든 14, CarInspector 14, Step 4, App 3, main 2), 골든 14개 불변.
 
 **최종 구조** (3.1 의 목표 구조에서 `ui/` 가 추가되고 `rule/` 에 검사기가 들어간 형태):
 
@@ -425,3 +425,19 @@ assemble/
 **5장 결정 대기 항목의 수정 위치 (뷰 분리 후 갱신)**: 전부 `ConsoleView` 한 파일이다 — 에러 메시지 범위 표기는 `menuOf()`, Test 다중 위반 출력은 `showTestResult()`, `MANDO`/`Mando` 표기는 `capitalized()` 삭제. 뒤로가기 시 초기화만 `AssembleApp.apply()` 의 `step.back()` 옆에서 `spec` 을 되돌리면 된다.
 
 **여기서 리팩토링을 멈추는 이유**: 남은 `switch` 는 Java 17 에서 이보다 단순해지지 않고, 나머지 냄새는 모두 겉보기 동작 변경(=리팩토링 범위 밖)을 요구한다. 이후 작업은 `feat:`/`fix:` 로 진행한다.
+
+### 7.8 P1 — 커밋 히스토리 정리 (2026-09-17)
+
+`refactor: 입출력을 Console 인터페이스로 분리…` 커밋에 섞여 있던 버그 수정 3건을 분리했다 (push 전이었으므로 히스토리 재작성).
+
+```
+refactor: 입출력을 Console 인터페이스로 분리하고 AssembleApp 을 인스턴스화   ← 원본 버그(EOF 크래시, 인터럽트 삼킴, System.in 닫힘) 그대로 유지
+fix: 입력이 끝나면(EOF) 예외 대신 조용히 종료
+fix: delay 중 인터럽트 발생 시 인터럽트 플래그 복원
+fix: 종료 시 System.in 을 닫지 않도록 Scanner close 제거
+```
+
+- 리팩토링 커밋 단독 상태에서 EOF 테스트를 돌리면 `NoSuchElementException` 으로 실패함을 확인한 뒤 그 테스트를 `fix:` 커밋으로 옮겼다.
+- `fix:` 3개 적용 후 트리가 원래 커밋과 바이트 단위로 동일함을 `git diff` 로 확인하고, 이후 13개 커밋을 cherry-pick 했다. 최종 트리도 이전 HEAD 와 동일.
+- 이전 히스토리는 `backup/kanghyun-pre-split` 브랜치에 남겨 두었다. 확인 후 지워도 된다.
+- 6장의 "동작이 바뀐 곳" 표는 그대로 유효하며, 이제 각 항목이 자기 `fix:` 커밋을 가진다.
