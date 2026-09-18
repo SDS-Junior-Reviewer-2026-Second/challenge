@@ -11,6 +11,10 @@ enum CarType {
         this.displayName = displayName;
     }
 
+    int code() {
+        return code;
+    }
+
     String displayName() {
         return displayName;
     }

@@ -1,4 +1,3 @@
-/** Current choices made by the user while assembling a car. */
 final class CarConfiguration {
     private CarType carType;
     private Engine engine;

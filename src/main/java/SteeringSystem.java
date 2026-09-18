@@ -12,6 +12,10 @@ enum SteeringSystem {
         this.runName = runName;
     }
 
+    int code() {
+        return code;
+    }
+
     String selectionName() {
         return selectionName;
     }
