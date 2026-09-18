@@ -4,7 +4,7 @@ import car.Car;
 import parts.CarType;
 import parts.SelectablePart;
 
-public class CarTypeUI implements PartSelectionStep {
+public class CarTypeUI implements PartUI {
     @Override
     public void showMenu() {
         System.out.println("        ______________");

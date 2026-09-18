@@ -1,6 +1,6 @@
 package assemble;
 
-import assemble.ui.CarUI;
+import assemble.ui.StepAction;
 import car.Car;
 
 import java.util.Scanner;
@@ -9,7 +9,6 @@ public class Assemble {
     private static final String CLEAR_SCREEN = "\033[H\033[2J";
 
     private static Car car = new Car();
-    private static final CarUI carUI = new CarUI();
 
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
@@ -50,29 +49,14 @@ public class Assemble {
                 continue;
             }
 
-            if (step.isRunTestStep()) {
-                handleRunTest(answer);
-                continue;
+            StepAction action = step.execute(car, answer);
+            if (action == StepAction.NEXT) {
+                delay(800);
+                flow.moveNext();
             }
-
-            step.select(car, answer);
-            delay(800);
-            flow.moveNext();
         }
 
         sc.close();
-    }
-
-    private static void handleRunTest(int answer) {
-        if (answer == AssemblyStep.RUN) {
-            carUI.runProducedCar(car);
-            delay(2000);
-        } else if (answer == AssemblyStep.TEST) {
-            System.out.println("Test...");
-            delay(1500);
-            carUI.testProducedCar(car);
-            delay(2000);
-        }
     }
 
     private static void delay(int ms) {

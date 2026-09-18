@@ -5,7 +5,7 @@ import car.Car;
 import parts.Engine;
 import parts.SelectablePart;
 
-public class EngineUI implements PartSelectionStep {
+public class EngineUI implements PartUI {
     @Override
     public void showMenu() {
         System.out.println("어떤 엔진을 탑재할까요?");

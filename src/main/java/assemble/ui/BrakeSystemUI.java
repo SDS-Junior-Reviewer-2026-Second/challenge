@@ -5,7 +5,7 @@ import parts.BrakeSystem;
 import car.Car;
 import parts.SelectablePart;
 
-public class BrakeSystemUI implements PartSelectionStep {
+public class BrakeSystemUI implements PartUI {
     @Override
     public void showMenu() {
         System.out.println("어떤 제동장치를 선택할까요?");

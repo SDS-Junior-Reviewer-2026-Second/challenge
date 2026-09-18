@@ -2,12 +2,9 @@ package assemble.ui;
 
 import car.Car;
 
-public interface PartSelectionStep {
+public interface AssemblyStepUI {
     void showMenu();
-
     boolean isValidInput(int input);
-
-    void applySelection(Car car, int input);
-
     String validationError();
+    StepAction execute(Car car, int input);
 }
