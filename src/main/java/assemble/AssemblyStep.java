@@ -1,3 +1,12 @@
+package assemble;
+
+import parts.BrakeSystem;
+import parts.Car;
+import parts.CarType;
+import parts.Engine;
+import parts.SelectablePart;
+import parts.SteeringSystem;
+
 public enum AssemblyStep {
     CAR_TYPE(BackNavigation.PREVIOUS) {
         @Override

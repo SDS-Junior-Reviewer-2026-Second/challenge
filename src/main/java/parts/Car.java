@@ -1,3 +1,5 @@
+package parts;
+
 public class Car {
     private CarType carType;
     private Engine engine;

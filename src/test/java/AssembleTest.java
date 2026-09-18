@@ -1,3 +1,5 @@
+import assemble.AssemblyFlow;
+import assemble.AssemblyStep;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -6,6 +8,13 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+
+import parts.BrakeSystem;
+import parts.Car;
+import parts.CarType;
+import parts.Engine;
+import parts.SelectablePart;
+import parts.SteeringSystem;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

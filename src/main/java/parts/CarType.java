@@ -1,3 +1,5 @@
+package parts;
+
 public enum CarType implements SelectablePart {
     SEDAN(1, "Sedan"),
     SUV(2, "SUV"),

@@ -1,3 +1,5 @@
+package parts;
+
 public enum BrakeSystem implements SelectablePart {
     MANDO(1, "Mando"),
     CONTINENTAL(2, "Continental"),

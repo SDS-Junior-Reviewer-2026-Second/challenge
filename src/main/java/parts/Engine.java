@@ -1,3 +1,5 @@
+package parts;
+
 public enum Engine implements SelectablePart {
     GM(1, "GM", false),
     TOYOTA(2, "TOYOTA", false),

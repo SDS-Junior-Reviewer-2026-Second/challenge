@@ -1,3 +1,5 @@
+package parts;
+
 public interface SelectablePart {
     int getCode();
 

@@ -1,3 +1,7 @@
+package assemble;
+
+import parts.Car;
+
 import java.util.Scanner;
 
 public class Assemble {

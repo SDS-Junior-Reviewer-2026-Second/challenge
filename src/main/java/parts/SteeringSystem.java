@@ -1,3 +1,5 @@
+package parts;
+
 public enum SteeringSystem implements SelectablePart {
     BOSCH(1, "Bosch"),
     MOBIS(2, "Mobis");
