@@ -2,6 +2,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+/** 부품 호환성 규칙과 원본의 검사 우선순위를 한곳에서 관리한다. */
 final class CompatibilityPolicy {
     private final List<Rule> rules = List.of(
             rule(car -> car.carType() == CarType.SEDAN
@@ -21,7 +22,7 @@ final class CompatibilityPolicy {
                     "Bosch제동장치에는 Bosch조향장치 이외 사용 불가")
     );
 
-    Optional<String> findViolation(CarConfiguration car) {
+    Optional<String> findViolation(Car car) {
         for (Rule rule : rules) {
             if (rule.violatedBy(car)) {
                 return Optional.of(rule.message());
@@ -30,12 +31,12 @@ final class CompatibilityPolicy {
         return Optional.empty();
     }
 
-    private static Rule rule(Predicate<CarConfiguration> condition, String message) {
+    private static Rule rule(Predicate<Car> condition, String message) {
         return new Rule(condition, message);
     }
 
-    private record Rule(Predicate<CarConfiguration> condition, String message) {
-        boolean violatedBy(CarConfiguration car) {
+    private record Rule(Predicate<Car> condition, String message) {
+        boolean violatedBy(Car car) {
             return condition.test(car);
         }
     }

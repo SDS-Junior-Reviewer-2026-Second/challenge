@@ -1,4 +1,4 @@
-/** 조립 화면의 입력 범위와 뒤로가기 규칙을 정의한다. */
+/** 조립 화면의 입력 범위와 단계 이동 규칙을 정의한다. */
 enum AssemblyStep {
     CAR_TYPE(1, CarType.values().length,
             "ERROR :: 차량 타입은 1 ~ 3 범위만 선택 가능"),
@@ -27,6 +27,15 @@ enum AssemblyStep {
 
     String errorMessage() {
         return errorMessage;
+    }
+
+    AssemblyStep nextStep() {
+        return switch (this) {
+            case CAR_TYPE -> ENGINE;
+            case ENGINE -> BRAKE_SYSTEM;
+            case BRAKE_SYSTEM -> STEERING_SYSTEM;
+            case STEERING_SYSTEM, RUN_TEST -> RUN_TEST;
+        };
     }
 
     AssemblyStep backStep() {

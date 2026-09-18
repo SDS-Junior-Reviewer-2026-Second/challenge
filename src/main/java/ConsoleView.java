@@ -3,6 +3,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
 
+/** 사용자에게 보이는 콘솔 입력과 출력만 담당한다. */
 final class ConsoleView {
     private static final String CLEAR_SCREEN = "\033[H\033[2J";
     private static final String SEPARATOR = "===============================";
@@ -57,7 +58,7 @@ final class ConsoleView {
         out.printf("%s 조향장치를 선택하셨습니다.\n", steeringSystem.selectionName());
     }
 
-    void showRunResult(CarConfiguration car, CarService.RunStatus result) {
+    void showRunResult(Car car, CarService.RunStatus result) {
         switch (result) {
             case INCOMPATIBLE -> out.println("자동차가 동작되지 않습니다");
             case BROKEN_ENGINE -> {
@@ -65,7 +66,7 @@ final class ConsoleView {
                 out.println("자동차가 움직이지 않습니다.");
             }
             case RUNNING -> {
-                // 원본은 아래 4개 줄에 printf("...\\n")를 사용한다.
+                // 원본은 아래 네 줄에 printf("...\n")를 사용한다.
                 out.printf("Car Type : %s\n", car.carType().displayName());
                 out.printf("Engine   : %s\n", car.engine().displayName());
                 out.printf("Brake    : %s\n", car.brakeSystem().runName());

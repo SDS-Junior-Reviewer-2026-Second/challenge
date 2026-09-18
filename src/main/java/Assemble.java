@@ -20,6 +20,7 @@ public final class Assemble {
         try {
             Thread.sleep(milliseconds);
         } catch (InterruptedException ignored) {
+            // 리팩토링 과제이므로 원본 동작을 그대로 유지한다.
         }
     }
 }

@@ -2,6 +2,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.IntConsumer;
 
+/** 콘솔 조립 과정의 흐름과 현재 선택 상태를 관리한다. */
 final class AssemblyProgram {
     private static final int SELECTION_DELAY_MS = 800;
     private static final int TEST_START_DELAY_MS = 1500;
@@ -10,9 +11,12 @@ final class AssemblyProgram {
     private final ConsoleView view;
     private final CarService carService;
     private final IntConsumer delay;
-    private final CarConfiguration car = new CarConfiguration();
 
     private AssemblyStep step = AssemblyStep.CAR_TYPE;
+    private CarType carType;
+    private Engine engine;
+    private BrakeSystem brakeSystem;
+    private SteeringSystem steeringSystem;
 
     AssemblyProgram(ConsoleView view, CarService carService, IntConsumer delay) {
         this.view = Objects.requireNonNull(view);
@@ -74,39 +78,37 @@ final class AssemblyProgram {
     }
 
     private void selectCarType(int answer) {
-        CarType selected = CarType.fromCode(answer);
-        car.selectCarType(selected);
-        view.showCarTypeSelection(selected);
-        advanceTo(AssemblyStep.ENGINE);
+        carType = CarType.fromCode(answer);
+        view.showCarTypeSelection(carType);
+        advance();
     }
 
     private void selectEngine(int answer) {
-        Engine selected = Engine.fromCode(answer);
-        car.selectEngine(selected);
-        view.showEngineSelection(selected);
-        advanceTo(AssemblyStep.BRAKE_SYSTEM);
+        engine = Engine.fromCode(answer);
+        view.showEngineSelection(engine);
+        advance();
     }
 
     private void selectBrakeSystem(int answer) {
-        BrakeSystem selected = BrakeSystem.fromCode(answer);
-        car.selectBrakeSystem(selected);
-        view.showBrakeSelection(selected);
-        advanceTo(AssemblyStep.STEERING_SYSTEM);
+        brakeSystem = BrakeSystem.fromCode(answer);
+        view.showBrakeSelection(brakeSystem);
+        advance();
     }
 
     private void selectSteeringSystem(int answer) {
-        SteeringSystem selected = SteeringSystem.fromCode(answer);
-        car.selectSteeringSystem(selected);
-        view.showSteeringSelection(selected);
-        advanceTo(AssemblyStep.RUN_TEST);
+        steeringSystem = SteeringSystem.fromCode(answer);
+        view.showSteeringSelection(steeringSystem);
+        advance();
     }
 
-    private void advanceTo(AssemblyStep nextStep) {
+    private void advance() {
         delay.accept(SELECTION_DELAY_MS);
-        step = nextStep;
+        step = step.nextStep();
     }
 
     private void processCompletedCar(int answer) {
+        Car car = completedCar();
+
         if (answer == 1) {
             view.showRunResult(car, carService.run(car));
             delay.accept(RESULT_DELAY_MS);
@@ -118,5 +120,9 @@ final class AssemblyProgram {
         Optional<String> failure = carService.test(car);
         view.showTestResult(failure);
         delay.accept(RESULT_DELAY_MS);
+    }
+
+    private Car completedCar() {
+        return new Car(carType, engine, brakeSystem, steeringSystem);
     }
 }

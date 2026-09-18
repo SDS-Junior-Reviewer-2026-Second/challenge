@@ -1,6 +1,7 @@
 import java.util.Objects;
 import java.util.Optional;
 
+/** 완성 차량에 대한 RUN/Test 유스케이스를 담당한다. */
 final class CarService {
     enum RunStatus {
         INCOMPATIBLE,
@@ -14,7 +15,7 @@ final class CarService {
         this.compatibilityPolicy = Objects.requireNonNull(compatibilityPolicy);
     }
 
-    RunStatus run(CarConfiguration car) {
+    RunStatus run(Car car) {
         if (compatibilityPolicy.findViolation(car).isPresent()) {
             return RunStatus.INCOMPATIBLE;
         }
@@ -24,7 +25,7 @@ final class CarService {
         return RunStatus.RUNNING;
     }
 
-    Optional<String> test(CarConfiguration car) {
+    Optional<String> test(Car car) {
         return compatibilityPolicy.findViolation(car);
     }
 }
