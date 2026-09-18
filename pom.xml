@@ -21,6 +21,13 @@
             <version>5.13.4</version>
             <scope>test</scope>
         </dependency>
+        <!-- JUnit5 테스트를 실제로 "실행"하려면 engine이 필요합니다 (api만으로는 mvn test 시 테스트가 0건으로 잡힙니다) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
         <!-- Source: https://mvnrepository.com/artifact/org.assertj/assertj-core -->
         <dependency>
             <groupId>org.assertj</groupId>
@@ -29,4 +36,15 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <!-- JUnit5(플랫폼) 테스트를 인식하려면 surefire 2.22 이상이 필요합니다 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.2</version>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -2,7 +2,6 @@ package CarAssembly;
 
 import CarEnums.AssembleStep;
 
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Assemble {
@@ -10,6 +9,11 @@ public class Assemble {
     private static final int BACK_TO_START = 0;
     private static final int RUN = 1;
     private static final int TEST = 2;
+
+    private static final int DEFAULT_PAUSE_MS = 800;
+    private static final int RUN_RESULT_DISPLAY_MS = 2000;
+    private static final int TEST_STARTING_DELAY_MS = 1500;
+    private static final int TEST_RESULT_DISPLAY_MS = 2000;
 
     private static final String[] RUN_TEST_MENU = {
             "멋진 차량이 완성되었습니다.",
@@ -21,12 +25,9 @@ public class Assemble {
     };
 
     private final ConsoleView view = new ConsoleView();
-    private final CarValidator validator = new CarValidator();
+    private final CarRunner carRunner = new CarRunner(view);
     private final Scanner scanner = new Scanner(System.in);
-
-    private CarBuilder carBuilder = new CarBuilder();
-    private AssembleStep currentStep = AssembleStep.CAR_TYPE;
-    private boolean assemblyCompleted = false;
+    private final AssemblyProgress progress = new AssemblyProgress();
 
     public static void main(String[] args) {
         new Assemble().run();
@@ -51,7 +52,7 @@ public class Assemble {
                 continue;
             }
 
-            if (assemblyCompleted) {
+            if (progress.isCompleted()) {
                 handleRunTestInput(answer);
             } else {
                 handleAssembleInput(answer);
@@ -61,10 +62,10 @@ public class Assemble {
     }
 
     private void showCurrentMenu() {
-        if (assemblyCompleted) {
+        if (progress.isCompleted()) {
             view.printMenu(RUN_TEST_MENU);
         } else {
-            view.printMenu(currentStep.menuLines());
+            view.printMenu(progress.currentStep().menuLines());
         }
     }
 
@@ -78,83 +79,43 @@ public class Assemble {
     }
 
     private void handleAssembleInput(int answer) {
-        if (currentStep.isBackAnswer(answer) && currentStep.canGoBack()) {
-            currentStep = currentStep.previous();
+        AssembleStep step = progress.currentStep();
+
+        if (step.isBackAnswer(answer) && progress.canGoBack()) {
+            progress.goToPreviousStep();
             return;
         }
 
-        if (!currentStep.isInSelectableRange(answer)) {
-            view.printError(currentStep.rangeErrorMessage());
+        if (!step.isInSelectableRange(answer)) {
+            view.printError(step.rangeErrorMessage());
             pause();
             return;
         }
 
-        String message = currentStep.select(answer, carBuilder);
+        String message = progress.selectAndAdvance(answer);
         view.printLine(message);
         pause();
-
-        AssembleStep next = currentStep.next();
-        if (next == null) {
-            assemblyCompleted = true;
-        } else {
-            currentStep = next;
-        }
     }
 
     private void handleRunTestInput(int answer) {
         if (answer == BACK_TO_START) {
-            resetAssembly();
+            progress.reset();
         } else if (answer == RUN) {
-            runProducedCar();
-            pause(2000);
+            carRunner.run(progress.carBuilder().build());
+            pause(RUN_RESULT_DISPLAY_MS);
         } else if (answer == TEST) {
-            System.out.println("Test...");
-            pause(1500);
-            testProducedCar();
-            pause(2000);
+            view.printLine("Test...");
+            pause(TEST_STARTING_DELAY_MS);
+            carRunner.test(progress.carBuilder().build());
+            pause(TEST_RESULT_DISPLAY_MS);
         } else {
             view.printError("Run 또는 Test 중 하나를 선택 필요");
             pause();
         }
     }
 
-    private void resetAssembly() {
-        carBuilder = new CarBuilder();
-        currentStep = AssembleStep.CAR_TYPE;
-        assemblyCompleted = false;
-    }
-
-    private void runProducedCar() {
-        Car car = carBuilder.build();
-
-        Optional<String> violation = validator.findFirstViolation(car);
-        if (violation.isPresent()) {
-            view.printLine("자동차가 동작되지 않습니다");
-            return;
-        }
-        if (car.hasBrokenEngine()) {
-            view.printLine("엔진이 고장나있습니다.");
-            view.printLine("자동차가 움직이지 않습니다.");
-            return;
-        }
-        view.printLine(car.describe());
-        view.printLine("자동차가 동작됩니다.");
-    }
-
-    private void testProducedCar() {
-        Car car = carBuilder.build();
-        Optional<String> violation = validator.findFirstViolation(car);
-
-        if (violation.isPresent()) {
-            view.printLine("자동차 부품 조합 테스트 결과 : FAIL");
-            view.printLine(violation.get());
-        } else {
-            view.printLine("자동차 부품 조합 테스트 결과 : PASS");
-        }
-    }
-
     private void pause() {
-        pause(800);
+        pause(DEFAULT_PAUSE_MS);
     }
 
     private void pause(int ms) {
