@@ -1,4 +1,9 @@
-package parts;
+package car;
+
+import parts.BrakeSystem;
+import parts.CarType;
+import parts.Engine;
+import parts.SteeringSystem;
 
 public class Car {
     private CarType carType;
@@ -40,36 +45,17 @@ public class Car {
         return validationError() == null;
     }
 
-    public void runProducedCar() {
+    public CarRunResult run() {
         if (!isValid()) {
-            System.out.println("자동차가 동작되지 않습니다");
-            return;
+            return CarRunResult.INVALID_COMBINATION;
         }
         if (engine.isBroken()) {
-            System.out.println("엔진이 고장나있습니다.");
-            System.out.println("자동차가 움직이지 않습니다.");
-            return;
+            return CarRunResult.BROKEN_ENGINE;
         }
-
-        System.out.printf("Car Type : %s%n", carType.getDisplayName());
-        System.out.printf("Engine   : %s%n", engine.getDisplayName());
-        System.out.printf("Brake    : %s%n", brakeSystem.getDisplayName());
-        System.out.printf("Steering : %s%n", steeringSystem.getDisplayName());
-        System.out.println("자동차가 동작됩니다.");
+        return CarRunResult.SUCCESS;
     }
 
-    public void testProducedCar() {
-        String error = validationError();
-        if (error == null) {
-            System.out.println("자동차 부품 조합 테스트 결과 : PASS");
-            return;
-        }
-
-        System.out.println("자동차 부품 조합 테스트 결과 : FAIL");
-        System.out.println(error);
-    }
-
-    private String validationError() {
+    public String validationError() {
         if (carType == CarType.SEDAN && brakeSystem == BrakeSystem.CONTINENTAL) {
             return "Sedan에는 Continental제동장치 사용 불가";
         }

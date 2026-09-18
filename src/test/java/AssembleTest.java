@@ -1,5 +1,7 @@
 import assemble.AssemblyFlow;
 import assemble.AssemblyStep;
+import assemble.ui.CarUI;
+import car.Car;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -10,7 +12,6 @@ import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 
 import parts.BrakeSystem;
-import parts.Car;
 import parts.CarType;
 import parts.Engine;
 import parts.SelectablePart;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class AssembleTest {
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
     private PrintStream originalOut;
+    private final CarUI carUI = new CarUI();
 
     @BeforeEach
     void setUp() {
@@ -156,7 +158,7 @@ class AssembleTest {
     void runsValidCar() {
         Car car = createCar(2, 3, 2, 2);
 
-        car.runProducedCar();
+        carUI.runProducedCar(car);
 
         assertThat(console())
                 .contains("Car Type : SUV")
@@ -171,7 +173,7 @@ class AssembleTest {
     void doesNotRunWithBrokenEngine() {
         Car car = createCar(1, 4, 1, 1);
 
-        car.runProducedCar();
+        carUI.runProducedCar(car);
 
         assertThat(console())
                 .contains("엔진이 고장나있습니다.")
@@ -184,7 +186,7 @@ class AssembleTest {
     void doesNotRunInvalidCombination() {
         Car car = createCar(1, 1, 2, 1);
 
-        car.runProducedCar();
+        carUI.runProducedCar(car);
 
         assertThat(console()).contains("자동차가 동작되지 않습니다");
     }
@@ -194,7 +196,7 @@ class AssembleTest {
     void reportsPassForValidCombination() {
         Car car = createCar(1, 1, 1, 2);
 
-        car.testProducedCar();
+        carUI.testProducedCar(car);
 
         assertThat(console()).contains("자동차 부품 조합 테스트 결과 : PASS");
     }
@@ -204,7 +206,7 @@ class AssembleTest {
         Car producedCar = createCar(car, engine, brake, steering);
 
         assertThat(producedCar.isValid()).isFalse();
-        producedCar.testProducedCar();
+        carUI.testProducedCar(producedCar);
         assertThat(console())
                 .contains("자동차 부품 조합 테스트 결과 : FAIL")
                 .contains(reason);

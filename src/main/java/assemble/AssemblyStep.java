@@ -1,102 +1,18 @@
 package assemble;
 
-import parts.BrakeSystem;
-import parts.Car;
-import parts.CarType;
-import parts.Engine;
-import parts.SelectablePart;
-import parts.SteeringSystem;
+import assemble.ui.BrakeSystemUI;
+import assemble.ui.CarTypeUI;
+import assemble.ui.EngineUI;
+import assemble.ui.PartSelectionStep;
+import assemble.ui.SteeringSystemUI;
+import car.Car;
 
 public enum AssemblyStep {
-    CAR_TYPE(BackNavigation.PREVIOUS) {
-        @Override
-        public void showMenu() {
-            CarType.showMenu();
-        }
-
-        @Override
-        public boolean isValidInput(int input) {
-            return CarType.isValidCode(input);
-        }
-
-        @Override
-        public void select(Car car, int input) {
-            car.selectCarType(input);
-            System.out.printf("차량 타입으로 %s을 선택하셨습니다.%n", car.getCarType().getDisplayName());
-        }
-
-        @Override
-        public String validationError() {
-            return "ERROR :: 차량 타입은 " + SelectablePart.codeRange(CarType.values()) + " 범위만 선택 가능";
-        }
-    },
-    ENGINE(BackNavigation.PREVIOUS) {
-        @Override
-        public void showMenu() {
-            Engine.showMenu();
-        }
-
-        @Override
-        public boolean isValidInput(int input) {
-            return input == BACK || Engine.isValidCode(input);
-        }
-
-        @Override
-        public void select(Car car, int input) {
-            car.selectEngine(input);
-            System.out.printf("%s 엔진을 선택하셨습니다.%n", car.getEngine().getDisplayName());
-        }
-
-        @Override
-        public String validationError() {
-            return "ERROR :: 엔진은 " + SelectablePart.codeRange(Engine.values()) + " 범위만 선택 가능";
-        }
-    },
-    BRAKE_SYSTEM(BackNavigation.PREVIOUS) {
-        @Override
-        public void showMenu() {
-            BrakeSystem.showMenu();
-        }
-
-        @Override
-        public boolean isValidInput(int input) {
-            return input == BACK || BrakeSystem.isValidCode(input);
-        }
-
-        @Override
-        public void select(Car car, int input) {
-            car.selectBrakeSystem(input);
-            System.out.printf("%s 제동장치를 선택하셨습니다.%n", car.getBrakeSystem().getDisplayName());
-        }
-
-        @Override
-        public String validationError() {
-            return "ERROR :: 제동장치는 " + SelectablePart.codeRange(BrakeSystem.values()) + " 범위만 선택 가능";
-        }
-    },
-    STEERING_SYSTEM(BackNavigation.PREVIOUS) {
-        @Override
-        public void showMenu() {
-            SteeringSystem.showMenu();
-        }
-
-        @Override
-        public boolean isValidInput(int input) {
-            return input == BACK || SteeringSystem.isValidCode(input);
-        }
-
-        @Override
-        public void select(Car car, int input) {
-            car.selectSteeringSystem(input);
-            System.out.printf("%s 조향장치를 선택하셨습니다.%n", car.getSteeringSystem().getDisplayName());
-        }
-
-        @Override
-        public String validationError() {
-            return "ERROR :: 조향장치는 " + SelectablePart.codeRange(SteeringSystem.values()) + " 범위만 선택 가능";
-        }
-    },
-    RUN_TEST(BackNavigation.FIRST) {
+    CAR_TYPE(new CarTypeUI(), BackNavigation.PREVIOUS),
+    ENGINE(new EngineUI(), BackNavigation.PREVIOUS),
+    BRAKE_SYSTEM(new BrakeSystemUI(), BackNavigation.PREVIOUS),
+    STEERING_SYSTEM(new SteeringSystemUI(), BackNavigation.PREVIOUS),
+    RUN_TEST(null, BackNavigation.FIRST) {
         @Override
         public void showMenu() {
             System.out.println("멋진 차량이 완성되었습니다.");
@@ -127,19 +43,29 @@ public enum AssemblyStep {
     public static final int RUN = 1;
     public static final int TEST = 2;
 
+    private final PartSelectionStep partUI;
     private final BackNavigation backNavigation;
 
-    AssemblyStep(BackNavigation backNavigation) {
+    AssemblyStep(PartSelectionStep partUI, BackNavigation backNavigation) {
+        this.partUI = partUI;
         this.backNavigation = backNavigation;
     }
 
-    public abstract void showMenu();
+    public void showMenu() {
+        partUI.showMenu();
+    }
 
-    public abstract boolean isValidInput(int input);
+    public boolean isValidInput(int input) {
+        return partUI.isValidInput(input);
+    }
 
-    public abstract void select(Car car, int input);
+    public void select(Car car, int input) {
+        partUI.applySelection(car, input);
+    }
 
-    public abstract String validationError();
+    public String validationError() {
+        return partUI.validationError();
+    }
 
     public BackNavigation getBackNavigation() {
         return backNavigation;

@@ -30,30 +30,11 @@ public enum Engine implements SelectablePart {
         return broken;
     }
 
-    public static void showMenu() {
-        System.out.println("어떤 엔진을 탑재할까요?");
-        System.out.println("0. 뒤로가기");
-        for (Engine engine : values()) {
-            System.out.printf("%d. %s%n", engine.code, engine.displayName);
-        }
-        System.out.println("===============================");
-    }
-
     public static boolean isValidCode(int code) {
-        for (Engine engine : values()) {
-            if (engine.code == code) {
-                return true;
-            }
-        }
-        return false;
+        return SelectablePart.isValidCode(values(), code);
     }
 
     public static Engine fromCode(int code) {
-        for (Engine engine : values()) {
-            if (engine.code == code) {
-                return engine;
-            }
-        }
-        throw new IllegalArgumentException("지원하지 않는 엔진 코드입니다: " + code);
+        return SelectablePart.fromCode(values(), code, "엔진");
     }
 }
