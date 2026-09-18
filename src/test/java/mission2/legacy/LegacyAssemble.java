@@ -1,6 +1,8 @@
+package mission2.legacy;
+
 import java.util.Scanner;
 
-public class Assemble {
+public class LegacyAssemble {
     private static final String CLEAR_SCREEN = "\033[H\033[2J";
 
     private static final int CarType_Q      = 0;
