@@ -1,3 +1,8 @@
+package mission2;
+
+import mission2.display.Display;
+import mission2.display.step.StepFactory;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +35,7 @@ class AssembleTest {
     void runsWithSpec() {
         assertThat(play("1", "1", "1", "2", "1"))
                 .contains("Car Type : Sedan")
+                .contains("Brake    : Mando")
                 .contains("자동차가 동작됩니다.");
     }
 
@@ -46,11 +52,21 @@ class AssembleTest {
     }
 
     @Test
+    @DisplayName("부품을 고르면 고른 것을 확인해 준다")
+    void confirmsEachSelection() {
+        assertThat(play("1", "1", "1", "2"))
+                .contains("차량 타입으로 Sedan을 선택하셨습니다.")
+                .contains("GM 엔진을 선택하셨습니다.")
+                .contains("MANDO 제동장치를 선택하셨습니다.")
+                .contains("MOBIS 조향장치를 선택하셨습니다.");
+    }
+
+    @Test
     @DisplayName("숫자가 아니거나 범위를 벗어난 입력은 안내만 한다")
     void rejectsInvalidInput() {
-        assertThat(play("abc", "9"))
+        assertThat(play("abc", "9", "-1"))
                 .contains("ERROR :: 숫자만 입력 가능")
-                .contains("ERROR :: [차량 타입] 1 ~ 3 사이의 번호만 선택 가능");
+                .contains("ERROR :: 차량 타입은 1 ~ 3 범위만 선택 가능");
     }
 
     @Test
@@ -62,11 +78,20 @@ class AssembleTest {
     }
 
     @Test
+    @DisplayName("마지막 단계에서 0번을 누르면 처음부터 다시 조립한다")
+    void restartsFromTheFirstStep() {
+        FakeDisplay display = playWith("1", "1", "1", "2", "0", "2", "1", "1", "2", "1");
+
+        assertThat(display.countOf("어떤 차량 타입을 선택할까요?")).isEqualTo(2);
+        assertThat(display.screen()).contains("Car Type : SUV");
+    }
+
+    @Test
     @DisplayName("첫 화면에는 뒤로가기가 없다")
     void firstStepHasNoBack() {
         assertThat(play("0"))
                 .doesNotContain("0. 뒤로가기")
-                .contains("ERROR :: [차량 타입] 1 ~ 3 사이의 번호만 선택 가능");
+                .contains("ERROR :: 차량 타입은 1 ~ 3 범위만 선택 가능");
     }
 
     @Test
@@ -81,7 +106,7 @@ class AssembleTest {
 
     private FakeDisplay playWith(String... inputs) {
         FakeDisplay display = new FakeDisplay(inputs);
-        new Assemble(display, AssemblyFactory.createSteps()).run();
+        new Assemble(display, StepFactory.assemblyLine()).run();
         return display;
     }
 

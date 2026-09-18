@@ -1,3 +1,5 @@
+package mission2.display;
+
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.List;
@@ -10,19 +12,15 @@ public class ConsoleDisplay implements Display {
 
     private final Scanner in;
     private final PrintStream out;
-    private final boolean animated;
 
-    public ConsoleDisplay(InputStream in, PrintStream out, boolean animated) {
+    public ConsoleDisplay(InputStream in, PrintStream out) {
         this.in = new Scanner(in);
         this.out = out;
-        this.animated = animated;
     }
 
     @Override
     public void redraw(List<String> screen) {
-        if (animated) {
-            out.print(CLEAR_SCREEN);
-        }
+        out.print(CLEAR_SCREEN);
         show(screen);
     }
 
@@ -41,7 +39,7 @@ public class ConsoleDisplay implements Display {
     @Override
     public void pause(long millis) {
         try {
-            Thread.sleep(animated ? millis : 0);
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

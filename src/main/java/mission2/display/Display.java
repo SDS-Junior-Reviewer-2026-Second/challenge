@@ -1,3 +1,5 @@
+package mission2.display;
+
 import java.util.List;
 
 public interface Display {
