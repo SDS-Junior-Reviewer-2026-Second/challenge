@@ -56,21 +56,6 @@ public class Car {
     }
 
     public String validationError() {
-        if (carType == CarType.SEDAN && brakeSystem == BrakeSystem.CONTINENTAL) {
-            return "Sedan에는 Continental제동장치 사용 불가";
-        }
-        if (carType == CarType.SUV && engine == Engine.TOYOTA) {
-            return "SUV에는 TOYOTA엔진 사용 불가";
-        }
-        if (carType == CarType.TRUCK && engine == Engine.WIA) {
-            return "Truck에는 WIA엔진 사용 불가";
-        }
-        if (carType == CarType.TRUCK && brakeSystem == BrakeSystem.MANDO) {
-            return "Truck에는 Mando제동장치 사용 불가";
-        }
-        if (brakeSystem == BrakeSystem.BOSCH && steeringSystem != SteeringSystem.BOSCH) {
-            return "Bosch제동장치에는 Bosch조향장치 이외 사용 불가";
-        }
-        return null;
+        return CarValidator.validationError(this);
     }
 }
