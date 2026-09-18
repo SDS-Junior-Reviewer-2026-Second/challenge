@@ -1,0 +1,7 @@
+* text=auto
+*.java text
+*.xml text
+*.md text
+# 골든 파일은 OS 와 무관하게 같은 바이트여야 한다 (테스트는 CRLF/LF 를 정규화해 비교)
+src/test/resources/golden/*.in text eol=lf
+src/test/resources/golden/*.out text eol=lf
